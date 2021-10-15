@@ -6,3 +6,5 @@
 #define SIZE 1024
 
 void mysh_init();
+char* refresh_prompt(char* user, char* cwd);
+void parser(char **stream);

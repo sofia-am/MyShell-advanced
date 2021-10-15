@@ -2,6 +2,6 @@
 
 void mysh_init(){
 
-    printf("\n############## ✿ Sofia's Shell ✿ ##############\n\n");
+    printf("\n######################## ✽ Sofia's Shell ✽ ########################\n\n");
 
 }

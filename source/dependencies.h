@@ -9,7 +9,15 @@
 #define clrscr() write(STDOUT_FILENO, CLR, strlen(CLR))
 //printf("\033[1;1H\033[2J")
 
+typedef struct Env{
+    char *user;
+    char *cwd;
+} env;
+
+env environment;
+
 void mysh_init();
-void refresh_prompt(char* user, char* cwd);
+void set_env();
+void refresh_prompt();
 void parser(char *stream);
 //void resize(char *input);

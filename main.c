@@ -14,7 +14,6 @@ int main(){
 
     while(bytes != -1){
         parser(input);
-        refresh_prompt();
     }
 /*
     for(int i = 0; i<strlen(input[i]); i++){

@@ -1,22 +1,21 @@
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic
+CFLAGS = -Wall -Werror -pedantic -g
 OBJS = objects
 SRC = source
 LIB = libraries
-
 
 all: mkdir main
 
 mkdir:
 	mkdir -p $(OBJS) $(LIB)	$(SRC)
 
-main: $(OBJS)/main.o $(OBJS)/startup.o
-	$(CC) $(OBJS)/main.o $(OBJS)/startup.o -o $@
+main: $(OBJS)/main.o $(OBJS)/dependencies.o
+	$(CC) $(OBJS)/main.o $(OBJS)/dependencies.o -o $@
 
-$(OBJS)/startup.o: $(SRC)/startup.c $(SRC)/startup.h
-	$(CC) -c $(SRC)/startup.c $(CFLAGS) -o $@
+$(OBJS)/dependencies.o: $(SRC)/dependencies.c $(SRC)/dependencies.h
+	$(CC) -c $(SRC)/dependencies.c $(CFLAGS) -o $@
 
-$(OBJS)/main.o: main.c $(SRC)/startup.h
+$(OBJS)/main.o: main.c $(SRC)/dependencies.h
 	$(CC) -c main.c $(CFLAGS) -o $@
 
 clean:

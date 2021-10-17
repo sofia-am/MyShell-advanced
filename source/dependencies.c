@@ -1,9 +1,7 @@
-#include "startup.h"
+#include "dependencies.h"
 
 void mysh_init(){
-
     printf("\n######################## ✽ Sofia's Shell ✽ ########################\n\n");
-
 }
 
 char* refresh_prompt(char* user, char* cwd){
@@ -24,8 +22,22 @@ char* refresh_prompt(char* user, char* cwd){
         }
     }
     return "error";
+    free(aux);
+    free(prompt);
 }
 
-void parser(char **stream){
-    
+void parser(char *stream){
+    char *aux;
+    aux = malloc(strlen(stream));
+    while(stream != NULL){
+        aux = strtok(stream, " \t\n");
+        if(strcmp(aux, "cd") == 0){
+            aux = strtok(NULL, " \t\n");
+            //llama a funcion para camiar de directorio
+        }
+        else if(strcmp(aux, "clr") == 0){
+            clrscr();
+        }
+    }
+
 }

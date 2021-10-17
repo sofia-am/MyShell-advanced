@@ -4,7 +4,6 @@ int main(){
     mysh_init();
     char *cwd;
     char *user;
-    char *prompt;
     //char *aux;
     char *input;
     int bytes;
@@ -12,16 +11,14 @@ int main(){
     cwd = getcwd(NULL, 0);  //aloca memoria on its own
     user = getenv("USER");
 
-    prompt = refresh_prompt(user, cwd);
-
-    write(STDOUT_FILENO, prompt, strlen(prompt));
+    refresh_prompt(user, cwd);
 
     input = malloc(SIZE);
     bytes = read(STDIN_FILENO, input, SIZE); 
 
-
     while(bytes != -1){
         parser(input);
+        refresh_prompt(user, cwd);
     }
 /*
     for(int i = 0; i<strlen(input[i]); i++){

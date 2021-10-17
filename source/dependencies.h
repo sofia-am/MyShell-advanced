@@ -10,6 +10,6 @@
 //printf("\033[1;1H\033[2J")
 
 void mysh_init();
-char* refresh_prompt(char* user, char* cwd);
+void refresh_prompt(char* user, char* cwd);
 void parser(char *stream);
 //void resize(char *input);

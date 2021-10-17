@@ -4,7 +4,7 @@ void mysh_init(){
     printf("\n######################## ✽ Sofia's Shell ✽ ########################\n\n");
 }
 
-char* refresh_prompt(char* user, char* cwd){
+void refresh_prompt(char* user, char* cwd){
     char *prompt;
     char *aux;
 
@@ -18,17 +18,18 @@ char* refresh_prompt(char* user, char* cwd){
             strcat(prompt, cwd);
             strcat(prompt,":~ ");
 
-            return prompt;
+            write(STDOUT_FILENO, prompt, strlen(prompt));
+            return;
         }
     }
-    return "error";
-    free(aux);
+    write(STDOUT_FILENO, "error", strlen("error"));
+    //free(aux);
     free(prompt);
 }
 
 void parser(char *stream){
     char *aux;
-    aux = malloc(strlen(stream));
+
     while(stream != NULL){
         aux = strtok(stream, " \t\n");
         if(strcmp(aux, "cd") == 0){

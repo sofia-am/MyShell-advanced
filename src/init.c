@@ -11,7 +11,7 @@ void set_env(){
     return;
 }
 
-void refresh_prompt(){
+char* refresh_prompt(){
     char *prompt;
     char *aux;
     prompt = malloc(strlen(environment.user));
@@ -22,11 +22,16 @@ void refresh_prompt(){
             strcat(prompt, "@");
             strcat(prompt, environment.cwd);
             strcat(prompt,":~ ");
-            printf("%s", prompt);
-            return;
+            //printf("%s", prompt);
+            return prompt;
+        }else{
+            fprintf(stderr, "Error al reservar memoria");
+            return "error";
         }
-    }else
+    }else{
         fprintf(stderr, "Error al resolver entorno");
+        return "error";
+    }
     //free(aux);
     free(prompt);        
 }

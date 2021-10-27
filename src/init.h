@@ -9,4 +9,4 @@ env environment;
 
 void init(void);
 void set_env(void);
-void refresh_prompt(void);
+char* refresh_prompt(void);

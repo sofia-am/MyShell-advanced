@@ -7,5 +7,5 @@
 //el size_t y ssize_t no admiten valores negativos
 ssize_t stream_size; //caracteres leidos
 size_t tokens;
-char* read_line();
+char* read_line(void);
 char** parser(char* stream);

@@ -43,7 +43,7 @@ int main()
         tokens++;
     }
 
-    for (int i = 0; i <= (tokens-1); i++)
+    for (int i = 0; i < (tokens); i++)
     {
         printf("%s\n", buff[i]);
     }

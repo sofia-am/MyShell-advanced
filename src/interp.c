@@ -25,9 +25,9 @@ char** parser(char *stream){
     tokens = 0;
     char** buff = malloc(sizeof(char*)); //reservo memoria para los strings
     ptr = strtok(stream, delim);
-    buff[tokens] = strdup(ptr);
     while (ptr != NULL)
     {
+        buff[tokens] = malloc(sizeof(char)*((strlen(ptr))+1));
         aux = realloc(buff, sizeof(char*)*(tokens+1));
         if(aux == NULL){
             fprintf(stderr, "Error de asignación");
@@ -35,7 +35,6 @@ char** parser(char *stream){
         }else
             buff = aux;
 
-        buff[tokens] = malloc(sizeof(char)*((strlen(ptr))+1));
         strcpy(buff[tokens],ptr);
         ptr = strtok(NULL, " \t\n");
         tokens++;

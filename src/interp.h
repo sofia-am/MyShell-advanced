@@ -3,7 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <malloc.h>
+#include <sys/utsname.h>
 
+struct utsname uts;
 //el size_t y ssize_t no admiten valores negativos
 ssize_t stream_size; //caracteres leidos
 size_t tokens;

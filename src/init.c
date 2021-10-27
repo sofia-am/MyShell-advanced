@@ -8,29 +8,35 @@ void init(){
 void set_env(){
     environment.cwd = getcwd(NULL, 0);
     environment.user = getenv("USER");
+    uname(&uts);
+    environment.hostname = uts.nodename;
     return;
 }
 
-char* refresh_prompt(){
+void refresh_prompt(){
     char *prompt;
     char *aux;
     prompt = malloc(strlen(environment.user));
-    if(environment.cwd != NULL && environment.user != NULL){
+    if(environment.cwd != NULL && environment.user != NULL && environment.hostname != NULL){
         strcpy(prompt, environment.user);
-        if((aux = realloc(prompt, strlen(environment.cwd)+strlen("@")+strlen(":~ ")+1)) != NULL){
+        aux = realloc(prompt, malloc_usable_size(prompt)+strlen(environment.hostname)+strlen(environment.cwd)+strlen("@")+strlen(":~$ ")+1);
+        if(aux != NULL){
             prompt = aux;
             strcat(prompt, "@");
+            strcat(prompt, environment.hostname);
+            strcat(prompt,":~");
             strcat(prompt, environment.cwd);
-            strcat(prompt,":~ ");
+            strcat(prompt, "$");
             //printf("%s", prompt);
-            return prompt;
+            workspace = prompt;
+            return;
         }else{
-            fprintf(stderr, "Error al reservar memoria");
-            return "error";
+            fprintf(stderr, "Error al reservar memoria\n");
+            exit(EXIT_FAILURE);
         }
     }else{
-        fprintf(stderr, "Error al resolver entorno");
-        return "error";
+        fprintf(stderr, "Error al resolver entorno\n");
+        exit(EXIT_FAILURE);
     }
     //free(aux);
     free(prompt);        

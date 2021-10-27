@@ -1,0 +1,4 @@
+*.o
+*.cgi
+*.txt
+.vscode/launch.json

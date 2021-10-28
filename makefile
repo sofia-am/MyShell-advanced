@@ -9,16 +9,19 @@ all: mkdir main
 mkdir:
 	mkdir -p $(OBJS) $(LIB)	$(SRC)
 
-main: $(OBJS)/main.o $(OBJS)/interp.o $(OBJS)/init.o
-	$(CC) $(OBJS)/main.o $(OBJS)/interp.o $(OBJS)/init.o -o $@
+main: $(OBJS)/main.o $(LIB)/libstatic.a
+	$(CC) -L. -o $@ $(OBJS)/main.o $(LIB)/libstatic.a -lm
 
-$(OBJS)/interp.o: $(SRC)/interp.c $(SRC)/interp.h
-	$(CC) -c $(SRC)/interp.c $(CFLAGS) -o $@
+$(LIB)/libstatic.a: $(OBJS)/interp.o $(OBJS)/init.o
+	ar rcs $@ $(OBJS)/interp.o $(OBJS)/init.o
 
-$(OBJS)/init.o: $(SRC)/init.c $(SRC)/init.h
+$(OBJS)/init.o: $(SRC)/init.c $(SRC)/init.h $(SRC)/interp.h
 	$(CC) -c $(SRC)/init.c $(CFLAGS) -o $@
 
-$(OBJS)/main.o: main.c $(SRC)/interp.h $(SRC)/init.h
+$(OBJS)/interp.o: $(SRC)/interp.c $(SRC)/interp.h 
+	$(CC) -c $(SRC)/interp.c $(CFLAGS) -o $@
+
+$(OBJS)/main.o: main.c
 	$(CC) -c main.c $(CFLAGS) -o $@
 
 clean:

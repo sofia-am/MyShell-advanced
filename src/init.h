@@ -1,3 +1,5 @@
+#ifndef INIT_DOT_H
+#define INIT_DOT_H
 #include "interp.h"
 
 typedef struct Env{
@@ -12,3 +14,5 @@ char* workspace;
 void init(void);
 void set_env(void);
 void refresh_prompt(void);
+
+#endif /*INIT_DOT_H*/

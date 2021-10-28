@@ -28,7 +28,7 @@ char** parser(char *stream){
     while (ptr != NULL)
     {
         buff[tokens] = malloc(sizeof(char)*((strlen(ptr))+1));
-        aux = realloc(buff, sizeof(char*)*(tokens+1));
+        aux = realloc(buff, malloc_usable_size(buff)+sizeof(char*)*(tokens+1));
         if(aux == NULL){
             fprintf(stderr, "Error de asignación");
             exit(EXIT_FAILURE);
@@ -46,4 +46,24 @@ char** parser(char *stream){
     free(stream);
     //tokens -= 1; //saco el NULL
     return buff; //devuelve un buffer de tamaño palabras + 1 -> porque almacena el NULL al final
+}
+
+void interpreter(char** commands){
+    if(strcmp(commands[0], "clr") == 0){
+        printf("%s", CLR);
+    }else if(strcmp(commands[0],"echo") == 0){
+        printf("%s", "encontre un echo!\n");
+    }else if(strcmp(commands[0],"cd") == 0){
+        printf("%s", "encontre un cd!\n");
+    }else if(strcmp(commands[0], "quit") == 0){
+        printf("%s", "encontre un quit!\n");
+    }
+}
+
+void integrador(char* stream){
+    char** buffer;
+    buffer = parser(stream);
+    if(buffer != NULL && tokens>1){
+        interpreter(buffer);
+    }
 }

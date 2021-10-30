@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <malloc.h>
-#include <string.h>
+#include <sys/utsname.h>
 
 int main()
 {
@@ -45,7 +47,29 @@ int main()
 
     for (int i = 0; i < (tokens); i++)
     {
-        printf("%s\n", buff[i]);
+        //printf("%s\n", buff[i]);
     }
     free(stream);
+    
+    if(strcmp(buff[0],"echo")==0){
+        char* chr;
+        char* env_var;
+        char* echoed;
+        chr = strchr(buff[1], '$');
+        echoed = malloc(sizeof(char*)*tokens);
+        if(chr != NULL){
+            env_var = getenv((chr+1));//me desplazo un lugar para "saltar" el $
+            if(env_var != NULL) printf(" %s\n ", env_var);
+            else printf("   ");
+        }else{
+            for(int j = 1; j<tokens; j++){
+                echoed = strcat(echoed, buff[j]);
+                echoed = strcat(echoed, " ");
+            }
+            printf("%s\n", echoed);
+        }
+        free(echoed);
+    }
+
+
 }

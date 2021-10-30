@@ -8,8 +8,9 @@ int main(){
       
     while(1)
     {   refresh_prompt();  
-        printf(" %s ", workspace);
+        printf("%s ", workspace);
         stream = read_line();
         integrador(stream);
+        printf("\n");
     }
 }

@@ -52,7 +52,7 @@ void interpreter(char** commands){
     if(strcmp(commands[0], "clr") == 0){
         printf("%s", CLR);
     }else if(strcmp(commands[0],"echo") == 0){
-        printf("%s", "encontre un echo!\n");
+        echo_interp(commands);
     }else if(strcmp(commands[0],"cd") == 0){
         printf("%s", "encontre un cd!\n");
     }else if(strcmp(commands[0], "quit") == 0){
@@ -72,5 +72,22 @@ void integrador(char* stream){
 se fija si corresponde a alguna funcionalidad */
 
 void echo_interp(char** commands){
-    
+    char* chr; //puntero que nos va a devolver la posicion del string donde encuentre $
+    char* env_var;
+    char* echoed;
+    chr = strchr(commands[1], '$');
+    echoed = malloc(sizeof(char*)*tokens);
+    if(chr != NULL){
+        env_var = getenv((chr+1));//me desplazo un lugar para "saltar" el $
+        if(env_var != NULL) printf(" %s\n ", env_var);
+        else printf("   ");
+    }else{
+        for(int j = 1; j<tokens; j++){
+            echoed = strcat(echoed, commands[j]); //appends las palabras
+            echoed = strcat(echoed, " ");
+        }
+        printf("%s\n", echoed);
+        free(echoed);
+    }
 }
+ 

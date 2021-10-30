@@ -17,5 +17,7 @@ char* read_line(void);
 char** parser(char* stream);
 void interpreter(char** commands);
 void integrador(char* stream);
+void echo_interp(char** commands);
+
 
 #endif

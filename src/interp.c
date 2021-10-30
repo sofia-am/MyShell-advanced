@@ -56,14 +56,21 @@ void interpreter(char** commands){
     }else if(strcmp(commands[0],"cd") == 0){
         printf("%s", "encontre un cd!\n");
     }else if(strcmp(commands[0], "quit") == 0){
-        printf("%s", "encontre un quit!\n");
+        //printf("%s", "encontre un quit!\n");
+        exit(EXIT_SUCCESS);
     }
 }
 
 void integrador(char* stream){
     char** buffer;
     buffer = parser(stream);
-    if(buffer != NULL && tokens>1){
+    if(buffer != NULL && tokens>=1){
         interpreter(buffer);
     }
+}
+/*toma el buffer de palabras parseadas y llama al interpeter que lee el 1er token y 
+se fija si corresponde a alguna funcionalidad */
+
+void echo_interp(char** commands){
+    
 }

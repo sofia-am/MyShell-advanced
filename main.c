@@ -1,16 +1,27 @@
-#include "src/init.h"
+#include "src/utils.h"
 
-int main(){
-    char* stream;
-    //char** buffer;
+int main()
+{
+    char *stream;
+    char **tokens;
+    // char** buffer;
     init();
     set_env();
-      
-    while(1)
-    {   refresh_prompt();  
+
+    while (1)
+    {
+        refresh_prompt();
         printf("%s ", workspace);
         stream = read_line();
-        integrador(stream);
+        tokens = parser(stream);
+
+        if (tokens != NULL)
+        {
+            shell_exec(tokens);
+        }
+
+        free(tokens);
+        free(stream);
         printf("\n");
     }
 }

@@ -1,5 +1,9 @@
 {
     "files.associations": {
-        "dependencies.h": "c"
+        "dependencies.h": "c",
+        "init.h": "c",
+        "interp.h": "c",
+        "string.h": "c",
+        "utils.h": "c"
     }
 }

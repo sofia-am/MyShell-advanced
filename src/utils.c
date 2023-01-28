@@ -6,10 +6,7 @@ void init()
     return;
 }
 
-/**
- * @brief  Setea las variables de entorno CWD, USER y HOSTNAME.
- * 
- */
+
 void set_env()
 {
     environment.cwd = getenv("PWD");
@@ -19,10 +16,6 @@ void set_env()
     return;
 }
 
-/**
- * @brief Actualiza el prompt con el usuario, el hostname y el directorio actual.
- * 
- */
 void refresh_prompt()
 {
     char *prompt;
@@ -63,11 +56,7 @@ void refresh_prompt()
     // free(aux);
     free(prompt);
 }
-/**
- * @brief Lee la entrada del usuario y la devuelve como un buffer.
- *
- * @return char*
- */
+
 char *read_line()
 {
     char *stream = NULL;
@@ -86,12 +75,7 @@ char *read_line()
     */
     return stream;
 }
-/**
- * @brief Recorre el buffer que se le pasa como parámetro y devuelve un arreglo donde cada elemento es un token.
- *
- * @param stream
- * @return char**
- */
+
 char **parser(char *stream)
 {
     char *ptr;
@@ -129,47 +113,15 @@ char **parser(char *stream)
 
 void interpreter(char **commands)
 {
-    if (strcmp(commands[0], "clr") == 0)
-    {
-        printf("%s", CLR); // limpia la pantalla
-    }
-    else if (strcmp(commands[0], "echo") == 0)
-    {
-        echo_interp(commands);
-    }
-    else if (strcmp(commands[0], "cd") == 0)
-    {
-        cd_interp(commands);
-    }
-    else if (strcmp(commands[0], "quit") == 0)
-    {
-        // printf("%s", "encontre un quit!\n");
-        exit(EXIT_SUCCESS);
-    }
-}
-
-void integrador(char *stream)
-{
-    char **buffer;
-    buffer = parser(stream);
-    if (buffer != NULL && tokens >= 1)
-    {
-        interpreter(buffer);
-    }
-}
-
-void quit_interp()
-{
-    printf("Saliendo de la shell...\n");
-    exit(EXIT_SUCCESS);
-}
-
-void clr_interp(){
-    printf("%s", CLR);
+    if (strcmp(commands[0], "clr") == 0) printf("%s", CLR); // limpia la pantalla
+    else if (strcmp(commands[0], "echo") == 0) echo_interp(commands); 
+    else if (strcmp(commands[0], "cd") == 0) cd_interp(commands);
+    else if (strcmp(commands[0], "quit") == 0) exit(EXIT_SUCCESS);
+    else if (strcmp(commands[0], "help") == 0) help_interp();
 }
 
 void help_interp(){
-    prinf("Bienvenido a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
+    printf("Bienvenido a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
 }
 
 void echo_interp(char **commands)
@@ -202,42 +154,33 @@ void echo_interp(char **commands)
 void cd_interp(char **commands)
 {
     char *chr;
-    struct stat st;
     if ((chr = malloc(sizeof(char *) * tokens)) != NULL)
     {
-        for (int j = 1; j < tokens; j++)
-        {
-            chr = strcat(chr, commands[j]); // appends las palabras
-            chr = strcat(chr, " ");
+        for(int i = 0; i < tokens; i++){
+            printf("%s\n", commands[i]);
         }
-        printf("Path ingresado: %s", chr);
 
-        if (stat(chr, &st) == -1)
-        {
-            perror("cd");
+/*         if(commands[0] == NULL){
+            chdir(getenv("HOME"));
             return;
-        }
-
-        if (setenv("OLDPWD", getenv("PWD"), 1) == -1)
-        {
-            perror("Error al setear OLDPWD");
-        }
-
-        if (setenv("PWD", chr, 1) == -1)
-        {
-            perror("Error al setear PWD");
-        }
+        } */
+        //else{
+            for (int j = 1; j < tokens; j++)
+            {
+                chr = strcat(chr, commands[j]); // appends las palabras
+                chr = strcat(chr, " ");
+            }
+/*             if(chdir(chr) == -1){
+                perror("Error al cambiar de directorio");
+                return;
+            } */
+            printf("%s\n", chr);
+            //return;
+       // }
     }
     else
     {
         perror("Error al allocar memoria para string");
         exit(EXIT_FAILURE);
     }
-}
-
-void shell_exec(char **args){
-    for(int i = 0; i < tokens; i++){
-        printf("%s\n", args[i]);
-    }
-
 }

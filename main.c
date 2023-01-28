@@ -15,13 +15,8 @@ int main()
         stream = read_line();
         tokens = parser(stream);
 
-        if (tokens != NULL)
-        {
-            shell_exec(tokens);
-        }
+        interpreter(tokens);
 
-        free(tokens);
-        free(stream);
         printf("\n");
     }
 }

@@ -17,19 +17,6 @@ typedef struct Env{
     char *hostname;
 } env;
 
-struct builtin{
-    char* name;
-    void (*func)(char**);
-};
-
-struct builtin builtins[] = {
-    {"echo", echo_interp},
-    {"cd", cd_interp},
-    {"clr", clr_interp},
-    {"quit", quit_interp},
-    {"help", help_interp}    
-};
-
 env environment;
 char* workspace;
 
@@ -37,21 +24,39 @@ struct utsname uts;
 //el size_t y ssize_t no admiten valores negativos
 ssize_t stream_size; //caracteres leidos
 size_t tokens;
+
+/**
+ * @brief Lee la entrada del usuario y la devuelve como un buffer.
+ *
+ * @return buffer con la entrada del usuario.
+ */
 char* read_line(void);
+/**
+ * @brief Recorre el buffer que se le pasa como parámetro y devuelve un arreglo donde cada elemento es un token.
+ *
+ * @param stream
+ * @return arreglo de tokens.
+ */
 char** parser(char* stream);
 void interpreter(char** commands);
 
-void integrador(char* stream);
 void echo_interp(char** commands);
 void cd_interp(char** commands);
 void help_interp(void);
-void quit_interp(void);
-void clr_interp(void);
-
-void shell_exec(char** commands);
 
 void init(void);
+/**
+ * @brief  Setea las variables de entorno CWD, USER y HOSTNAME.
+ * 
+ */
 void set_env(void);
+
+/**
+ * @brief Actualiza el prompt con el usuario, el hostname y el directorio actual.
+ * 
+ */
 void refresh_prompt(void);
+
+int num_builtins(void);
 
 #endif

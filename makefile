@@ -12,15 +12,12 @@ mkdir:
 main: $(OBJS)/main.o $(LIB)/libstatic.a
 	$(CC) -L. -o $@ $(OBJS)/main.o $(LIB)/libstatic.a -lm
 
-$(LIB)/libstatic.a: $(OBJS)/interp.o $(OBJS)/init.o
-	ar rcs $@ $(OBJS)/interp.o $(OBJS)/init.o
+$(LIB)/libstatic.a: $(OBJS)/utils.o 
+	ar rcs $@ $(OBJS)/utils.o 
 
-$(OBJS)/init.o: $(SRC)/init.c $(SRC)/init.h $(SRC)/interp.h
-	$(CC) -c $(SRC)/init.c $(CFLAGS) -o $@
-
-$(OBJS)/interp.o: $(SRC)/interp.c $(SRC)/interp.h 
-	$(CC) -c $(SRC)/interp.c $(CFLAGS) -o $@
-
+$(OBJS)/utils.o: $(SRC)/utils.c $(SRC)/utils.h 
+	$(CC) -c $(SRC)/utils.c $(CFLAGS) -o $@
+	
 $(OBJS)/main.o: main.c
 	$(CC) -c main.c $(CFLAGS) -o $@
 

@@ -17,6 +17,19 @@ typedef struct Env{
     char *hostname;
 } env;
 
+struct builtin{
+    char* name;
+    void (*func)(char**);
+};
+
+struct builtin builtins[] = {
+    {"echo", echo_interp},
+    {"cd", cd_interp},
+    {"clr", clr_interp},
+    {"quit", quit_interp},
+    {"help", help_interp}    
+};
+
 env environment;
 char* workspace;
 
@@ -25,21 +38,17 @@ struct utsname uts;
 ssize_t stream_size; //caracteres leidos
 size_t tokens;
 char* read_line(void);
-/* recorre el buffer de entrada, y tokeniza cada uno de las 
-palabras que se ingresan, almacenándolas en un arreglo buff
-*/
 char** parser(char* stream);
-/* parsea cada uno de los tokens y si es un comando, llama a la función correspondiente
-*/
 void interpreter(char** commands);
-/*llama a la funcion parser que tokeniza el stream de entrada y
- recorre el buffer de tokens, llamando a interpreter para saber 
- si corresponde a algun comando válido*/
+
 void integrador(char* stream);
-/* ejecuta el comando echo*/
 void echo_interp(char** commands);
-/* ejecuta el comando cd */
 void cd_interp(char** commands);
+void help_interp(void);
+void quit_interp(void);
+void clr_interp(void);
+
+void shell_exec(char** commands);
 
 void init(void);
 void set_env(void);

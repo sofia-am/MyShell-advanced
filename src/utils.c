@@ -158,6 +158,20 @@ void integrador(char *stream)
     }
 }
 
+void quit_interp()
+{
+    printf("Saliendo de la shell...\n");
+    exit(EXIT_SUCCESS);
+}
+
+void clr_interp(){
+    printf("%s", CLR);
+}
+
+void help_interp(){
+    prinf("Bienvenido a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
+}
+
 void echo_interp(char **commands)
 {
     char *chr; // puntero que nos va a devolver la posicion del string donde encuentre $
@@ -219,4 +233,11 @@ void cd_interp(char **commands)
         perror("Error al allocar memoria para string");
         exit(EXIT_FAILURE);
     }
+}
+
+void shell_exec(char **args){
+    for(int i = 0; i < tokens; i++){
+        printf("%s\n", args[i]);
+    }
+
 }

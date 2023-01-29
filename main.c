@@ -1,12 +1,17 @@
 #include "src/utils.h"
 
-int main()
+int main(int argc, char *argv[])
 {
     char *stream;
     char **tokens;
     // char** buffer;
     init();
     set_env();
+
+    if(argc > 1)
+    {
+        read_from_file(argv[1]);
+    }
 
     while (1)
     {

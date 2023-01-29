@@ -58,7 +58,6 @@ void set_env(void);
  * 
  */
 void refresh_prompt(void);
-
-int num_builtins(void);
+void read_from_file(char* file);
 
 #endif

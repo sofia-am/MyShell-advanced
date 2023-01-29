@@ -102,12 +102,11 @@ char **parser(char *stream)
         ptr = strtok(NULL, " \t\n");
         tokens++;
     }
-    // for (int i = 0; i <= (tokens-1); i++)
-    // {
-    //     printf("%s\n", buff[i]);
-    // }
-    free(stream);
-    // tokens -= 1; //saco el NULL
+/*     for (int i = 0; i <= (tokens-1); i++)
+    {
+         printf("%s\n", buff[i]);
+    } */
+    //free(stream); // con el batchfile se me explotaba??
     return buff; // devuelve un buffer de tamaño palabras + 1 -> porque almacena el NULL al final
 }
 
@@ -125,7 +124,7 @@ void interpreter(char **commands)
         help_interp();
     else
     {
-        launch_program(commands);
+       launch_program(commands);
     }
 }
 
@@ -150,6 +149,7 @@ void launch_program(char **commands)
             // caso donde el programa se encuentra en el mismo directorio
             execv(commands[0], commands);
             perror("Error al ejecutar el programa");
+            break;
         }
         // sino lo busca en $PATH
         execvp(commands[0], commands);
@@ -280,4 +280,26 @@ void cd_interp(char **commands)
         perror("Error al allocar memoria para string");
         exit(EXIT_FAILURE);
     }
+}
+
+void read_from_file(char *file_name){
+
+    printf("Recibí un batchfile: %s\n", file_name);
+    FILE *fp;
+    char line[1024];
+    char **tokens;
+    fp = fopen(file_name, "r");
+    if (fp == NULL){
+        perror("Error al abrir el archivo");
+        exit(EXIT_FAILURE);
+    }
+    printf("Abriendo el archivo...\n");
+    while(fgets(line, sizeof(line), fp) != NULL){
+        printf("Leyendo linea: %s", line);
+        tokens = parser(line);
+        interpreter(tokens);
+    }
+    //free(tokens);
+    fclose(fp);
+    exit(EXIT_SUCCESS);
 }

@@ -184,7 +184,26 @@ void cd_interp(char **commands)
                 perror("Error al cambiar de directorio");
                 return;
             }
+            setenv("OLDPWD", getenv("PWD"), 1);
             setenv("PWD", getenv("OLDPWD"), 1);
+            return;
+        }
+        /* caso donde queremos ir al directorio padre */
+        else if(strcmp(commands[1], "..") == 0){
+            char *parent_directory;
+            char *tail;
+            parent_directory = getenv("PWD");
+            tail = strrchr(getenv("PWD"), '/');
+            int len = strlen(parent_directory);
+            parent_directory[len - strlen(tail)] = '\0';
+            if (chdir(parent_directory) == -1)
+            {
+                perror("Error al cambiar de directorio");
+                return;
+            }
+
+            setenv("OLDPWD", getenv("PWD"), 1);
+            setenv("PWD", parent_directory, 1);
             return;
         }
         /* caso donde queremos ir a un directorio dentro del directorio actual */
@@ -195,6 +214,7 @@ void cd_interp(char **commands)
                 strcat(full_dir, chr);
             if(chdir(full_dir) == -1){                
                 perror("Directorio inválido");
+                return;
             }
             setenv("OLDPWD", getenv("PWD"), 1);
             setenv("PWD", full_dir, 1);

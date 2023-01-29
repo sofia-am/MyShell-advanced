@@ -212,6 +212,7 @@ void cd_interp(char **commands)
             setenv("PWD", chr, 1);
             return;
         }
+    }
     else
     {
         perror("Error al allocar memoria para string");

@@ -7,7 +7,7 @@
 
 int main()
 {
-    //el size_t no admite valores negativos
+    /* //el size_t no admite valores negativos
     ssize_t read_c; //caracteres leidos
     char *stream = NULL;
     size_t size = 0;
@@ -19,6 +19,7 @@ int main()
         printf("%s \n", stream);
     }
 */
+/*
     char *ptr;
     char *aux = stream;
     char **aux2;
@@ -71,5 +72,7 @@ int main()
         free(echoed);
     }
 
+ */
 
+    printf("Hello World!\n");
 }

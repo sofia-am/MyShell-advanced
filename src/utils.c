@@ -2,7 +2,8 @@
 
 void init()
 {
-    printf("\n######################## ✽ Sofia's Shell ✽ ########################\n\n");
+    printf("\n*---------------------------------------- ✽ Sofia's Shell ✽ ----------------------------------------*\n");
+    printf("                                             (づ｡◕‿‿◕｡)づ\n\n✽ Este trabajo se realizo dentro del contexto de la materia Sistemas Operativos 1\n✽ Si necesitás ayuda, escribí el comando help\n✽ Linux masterrace\n\n");
     return;
 }
 
@@ -122,11 +123,49 @@ void interpreter(char **commands)
         exit(EXIT_SUCCESS);
     else if (strcmp(commands[0], "help") == 0)
         help_interp();
+    else
+    {
+        launch_program(commands);
+    }
+}
+
+void launch_program(char **commands)
+{
+    /* la razón por la que necesito crear un nuevo proceso es que la funcion exec, que es la que va a ejecutar el programa que se le mande como argumento, reemplaza mi programa actual por el que se le pasa como argumento, si hiciera esto en el mismo proceso, moriría mi shell original. Se reemplaza a si mismo con otra imagen de programa */
+    // with L: comma separated values
+    // with V: vector (i.e array of strings)
+    // with P: include normal search path for executable
+    // sin la P: busca el programa en la current folder
+    // tiene que terminar con un NULL !!!!!!!!!!!!!!!!
+
+    pid_t pid = fork();
+    int status;
+
+    switch (pid)
+    {
+    case -1:
+        perror("Fallo al hacer fork");
+    case 0:
+        if(commands[0][0] == '.'){
+            // caso donde el programa se encuentra en el mismo directorio
+            execv(commands[0], commands);
+            perror("Error al ejecutar el programa");
+        }
+        // sino lo busca en $PATH
+        execvp(commands[0], commands);
+        perror("Error al ejecutar programa");
+        break;
+
+    default:
+        do{
+            waitpid(pid, &status, WUNTRACED);
+        }while(!WIFEXITED(status) && !WIFSIGNALED(status));
+    }
 }
 
 void help_interp()
 {
-    printf("Bienvenido a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
+    printf("\n oh hiiii, bienvenido/a a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
 }
 
 void echo_interp(char **commands)
@@ -163,9 +202,9 @@ void cd_interp(char **commands)
     if ((chr = malloc(sizeof(char *) * tokens)) != NULL)
     {
         for (int j = 1; j < tokens; j++)
-            {
-                chr = strcat(chr, commands[j]); // appends las palabras
-            }
+        {
+            chr = strcat(chr, commands[j]); // appends las palabras
+        }
         /* vamos al directorio base */
         if (commands[1] == NULL)
         {
@@ -189,7 +228,8 @@ void cd_interp(char **commands)
             return;
         }
         /* caso donde queremos ir al directorio padre */
-        else if(strcmp(commands[1], "..") == 0){
+        else if (strcmp(commands[1], "..") == 0)
+        {
             char *parent_directory;
             char *tail;
             parent_directory = getenv("PWD");
@@ -207,19 +247,21 @@ void cd_interp(char **commands)
             return;
         }
         /* caso donde queremos ir a un directorio dentro del directorio actual */
-        else if(commands[1][0] != '/'){
-            char *full_dir = malloc(sizeof(orig_dir)+sizeof(chr)+sizeof(char)*1024);
-                strcpy(full_dir, orig_dir);
-                strcat(full_dir, "/");
-                strcat(full_dir, chr);
-            if(chdir(full_dir) == -1){                
+        else if (commands[1][0] != '/')
+        {
+            char *full_dir = malloc(sizeof(orig_dir) + sizeof(chr) + sizeof(char) * 1024);
+            strcpy(full_dir, orig_dir);
+            strcat(full_dir, "/");
+            strcat(full_dir, chr);
+            if (chdir(full_dir) == -1)
+            {
                 perror("Directorio inválido");
                 return;
             }
             setenv("OLDPWD", getenv("PWD"), 1);
             setenv("PWD", full_dir, 1);
             return;
-        } 
+        }
         else
         {
             if (chdir(chr) == -1)

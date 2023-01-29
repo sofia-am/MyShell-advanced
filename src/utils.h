@@ -8,6 +8,7 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 #define CLR "\033[1;1H\033[2J"
 
@@ -40,6 +41,7 @@ char* read_line(void);
 char** parser(char* stream);
 void interpreter(char** commands);
 
+void launch_program(char** commands);
 void echo_interp(char** commands);
 void cd_interp(char** commands);
 void help_interp(void);

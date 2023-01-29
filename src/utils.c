@@ -2,6 +2,7 @@
 
 void init()
 {
+    job_id = 0;
     printf("\n*---------------------------------------- ✽ Sofia's Shell ✽ ----------------------------------------*\n");
     printf("                                             (づ｡◕‿‿◕｡)づ\n\n✽ Este trabajo se realizo dentro del contexto de la materia Sistemas Operativos 1\n✽ Si necesitás ayuda, escribí el comando help\n✽ Linux masterrace\n\n");
     return;
@@ -118,8 +119,10 @@ void interpreter(char **commands)
         echo_interp(commands);
     else if (strcmp(commands[0], "cd") == 0)
         cd_interp(commands);
-    else if (strcmp(commands[0], "quit") == 0)
+    else if (strcmp(commands[0], "quit") == 0){
+        printf("\nok byeeeeeeee    ଘ(੭*ˊᵕˋ)੭*☆ﾟ. * ･ ｡ﾟ\n");
         exit(EXIT_SUCCESS);
+        }
     else if (strcmp(commands[0], "help") == 0)
         help_interp();
     else
@@ -302,4 +305,29 @@ void read_from_file(char *file_name){
     //free(tokens);
     fclose(fp);
     exit(EXIT_SUCCESS);
+}
+
+void background_exec(char** commands){
+    pid_t pid;
+    pid = fork();
+    job_id++;
+    switch(pid){
+    case -1:
+        perror("Error al crear proceso");
+        break;
+    case 0:
+        printf("[%d] %d\n", job_id, getpid());
+        interpreter(commands);
+        job_id--;
+        exit(EXIT_SUCCESS);
+    default:
+        signal(SIGCHLD, sigHandler);
+        sleep(1);
+        return;
+    }
+}
+
+void sigHandler(){
+    int status;
+    waitpid(-1, &status, WNOHANG);
 }

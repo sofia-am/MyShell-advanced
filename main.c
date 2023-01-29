@@ -3,7 +3,7 @@
 int main(int argc, char *argv[])
 {
     char *stream;
-    char **tokens;
+    char **tokens_buff;
     // char** buffer;
     init();
     set_env();
@@ -18,10 +18,15 @@ int main(int argc, char *argv[])
         refresh_prompt();
         printf("%s ", workspace);
         stream = read_line();
-        tokens = parser(stream);
+        tokens_buff = parser(stream);
 
-        interpreter(tokens);
+        if(strcmp(tokens_buff[tokens-1],"&") == 0)
+        {
+            background_exec(tokens_buff);
+        }else{
+            interpreter(tokens_buff);
 
-        printf("\n");
+            printf("\n");
+        }
     }
 }

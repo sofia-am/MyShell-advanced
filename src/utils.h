@@ -21,6 +21,8 @@ typedef struct Env{
 env environment;
 char* workspace;
 
+int job_id;
+
 struct utsname uts;
 //el size_t y ssize_t no admiten valores negativos
 ssize_t stream_size; //caracteres leidos
@@ -59,5 +61,7 @@ void set_env(void);
  */
 void refresh_prompt(void);
 void read_from_file(char* file);
+void background_exec(char** commands);
+void sigHandler();
 
 #endif

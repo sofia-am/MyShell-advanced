@@ -7,13 +7,10 @@ LIB = lib
 all: mkdir main
 
 mkdir:
-	mkdir -p $(OBJS) $(LIB)	$(SRC)
+	mkdir -p $(OBJS)	$(SRC)
 
-main: $(OBJS)/main.o $(LIB)/libstatic.a
-	$(CC) -L. -o $@ $(OBJS)/main.o $(LIB)/libstatic.a -lm
-
-$(LIB)/libstatic.a: $(OBJS)/utils.o 
-	ar rcs $@ $(OBJS)/utils.o 
+main: $(OBJS)/main.o $(OBJS)/utils.o
+	$(CC) -o $@ $(OBJS)/main.o $(OBJS)/utils.o
 
 $(OBJS)/utils.o: $(SRC)/utils.c $(SRC)/utils.h 
 	$(CC) -c $(SRC)/utils.c $(CFLAGS) -o $@

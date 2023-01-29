@@ -6,7 +6,6 @@ void init()
     return;
 }
 
-
 void set_env()
 {
     environment.cwd = getenv("PWD");
@@ -113,14 +112,20 @@ char **parser(char *stream)
 
 void interpreter(char **commands)
 {
-    if (strcmp(commands[0], "clr") == 0) printf("%s", CLR); // limpia la pantalla
-    else if (strcmp(commands[0], "echo") == 0) echo_interp(commands); 
-    else if (strcmp(commands[0], "cd") == 0) cd_interp(commands);
-    else if (strcmp(commands[0], "quit") == 0) exit(EXIT_SUCCESS);
-    else if (strcmp(commands[0], "help") == 0) help_interp();
+    if (strcmp(commands[0], "clr") == 0)
+        printf("%s", CLR); // limpia la pantalla
+    else if (strcmp(commands[0], "echo") == 0)
+        echo_interp(commands);
+    else if (strcmp(commands[0], "cd") == 0)
+        cd_interp(commands);
+    else if (strcmp(commands[0], "quit") == 0)
+        exit(EXIT_SUCCESS);
+    else if (strcmp(commands[0], "help") == 0)
+        help_interp();
 }
 
-void help_interp(){
+void help_interp()
+{
     printf("Bienvenido a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
 }
 
@@ -154,30 +159,59 @@ void echo_interp(char **commands)
 void cd_interp(char **commands)
 {
     char *chr;
+    char *orig_dir = getenv("PWD");
     if ((chr = malloc(sizeof(char *) * tokens)) != NULL)
     {
-        for(int i = 0; i < tokens; i++){
-            printf("%s\n", commands[i]);
-        }
-
-/*         if(commands[0] == NULL){
-            chdir(getenv("HOME"));
-            return;
-        } */
-        //else{
-            for (int j = 1; j < tokens; j++)
+        for (int j = 1; j < tokens; j++)
             {
                 chr = strcat(chr, commands[j]); // appends las palabras
-                chr = strcat(chr, " ");
             }
-/*             if(chdir(chr) == -1){
+        /* vamos al directorio base */
+        if (commands[1] == NULL)
+        {
+            if (setenv("PWD", getenv("HOME"), 1) == -1)
+            {
+                perror("Error al cambiar de directorio");
+                exit(EXIT_FAILURE);
+            }
+            return;
+        }
+        /* retornamos al directorio anterior */
+        else if (strcmp(commands[1], "-") == 0)
+        {
+            if (chdir(getenv("OLDPWD")) == -1)
+            {
                 perror("Error al cambiar de directorio");
                 return;
-            } */
-            printf("%s\n", chr);
-            //return;
-       // }
-    }
+            }
+            setenv("PWD", getenv("OLDPWD"), 1);
+            return;
+        }
+        /* caso donde queremos ir a un directorio dentro del directorio actual */
+        else if(commands[1][0] != '/'){
+            char *full_dir = malloc(sizeof(orig_dir)+sizeof(chr)+sizeof(char)*1024);
+                strcpy(full_dir, orig_dir);
+                strcat(full_dir, "/");
+                strcat(full_dir, chr);
+            if(chdir(full_dir) == -1){                
+                perror("Directorio inválido");
+            }
+            setenv("OLDPWD", getenv("PWD"), 1);
+            setenv("PWD", full_dir, 1);
+            return;
+        } 
+        else
+        {
+            if (chdir(chr) == -1)
+            {
+                perror("Error al cambiar de directorio");
+                return;
+            }
+
+            setenv("OLDPWD", getenv("PWD"), 1);
+            setenv("PWD", chr, 1);
+            return;
+        }
     else
     {
         perror("Error al allocar memoria para string");

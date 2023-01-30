@@ -105,11 +105,11 @@ char **parser(char *stream)
         ptr = strtok(NULL, " \t\n");
         tokens++;
     }
-/*   for (int i = 0; i <= (tokens-1); i++)
-    {
-         printf("%s\n", buff[i]);
-    }  */
-    //free(stream); // con el batchfile se me explotaba??
+    /*   for (int i = 0; i <= (tokens-1); i++)
+        {
+             printf("%s\n", buff[i]);
+        }  */
+    // free(stream); // con el batchfile se me explotaba??
     return buff; // devuelve un buffer de tamaño palabras + 1 -> porque almacena el NULL al final
 }
 
@@ -121,15 +121,16 @@ void interpreter(char **commands)
         echo_interp(commands);
     else if (strcmp(commands[0], "cd") == 0)
         cd_interp(commands);
-    else if (strcmp(commands[0], "quit") == 0){
+    else if (strcmp(commands[0], "quit") == 0)
+    {
         printf("\nok byeeeeeeee    ଘ(੭*ˊᵕˋ)੭*☆ﾟ. * ･ ｡ﾟ\n");
         exit(EXIT_SUCCESS);
-        }
+    }
     else if (strcmp(commands[0], "help") == 0)
         help_interp();
     else
     {
-       launch_program(commands);
+        launch_program(commands);
     }
 }
 
@@ -144,7 +145,7 @@ void launch_program(char **commands)
 
     pid_t pid = fork();
     int wstatus;
- 
+
     switch (pid)
     {
     case -1:
@@ -152,9 +153,10 @@ void launch_program(char **commands)
     case 0:
         signal(SIGINT, SIG_DFL);
         signal(SIGQUIT, SIG_DFL);
-        signal(SIGTSTP, stop_handler); 
+        signal(SIGTSTP, stop_handler);
 
-        if(commands[0][0] == '.'){
+        if (commands[0][0] == '.')
+        {
             // caso donde el programa se encuentra en el mismo directorio
             execv(commands[0], commands);
             perror("Error al ejecutar el programa");
@@ -167,14 +169,17 @@ void launch_program(char **commands)
 
     default:
         waitpid(-1, &wstatus, WUNTRACED);
-        if(WIFSTOPPED(wstatus)){
+        if (WIFSTOPPED(wstatus))
+        {
             sleeping_bois++;
             printf("[%d] + %d suspended", sleeping_bois, pid);
-        }else if(WIFCONTINUED(wstatus)){
+        }
+        else if (WIFCONTINUED(wstatus))
+        {
             sleeping_bois--;
             printf("[%d] + %d continued", sleeping_bois, pid);
         }
-        return;        
+        return;
     }
 }
 
@@ -297,37 +302,42 @@ void cd_interp(char **commands)
     }
 }
 
-void read_from_file(char *file_name){
+void read_from_file(char *file_name)
+{
 
     printf("Recibí un batchfile: %s\n", file_name);
     FILE *fp;
     char line[1024];
     char **tokens;
     fp = fopen(file_name, "r");
-    if (fp == NULL){
+    if (fp == NULL)
+    {
         perror("Error al abrir el archivo");
         exit(EXIT_FAILURE);
     }
     printf("Abriendo el archivo...\n");
-    while(fgets(line, sizeof(line), fp) != NULL){
+    while (fgets(line, sizeof(line), fp) != NULL)
+    {
         printf("Leyendo linea: %s", line);
         tokens = parser(line);
         interpreter(tokens);
     }
-    //free(tokens);
+    // free(tokens);
     fclose(fp);
     exit(EXIT_SUCCESS);
 }
 
-void background_exec(char** commands){
+void background_exec(char **commands)
+{
     pid_t pid;
     int status;
     pid = fork();
-    
-    job_id = (int*)mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    job_id = (int *)mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     job_id[0] = 0;
 
-    switch(pid){
+    switch (pid)
+    {
     case -1:
         perror("Error al crear proceso");
         break;
@@ -339,15 +349,120 @@ void background_exec(char** commands){
         job_id[0]--;
         exit(EXIT_SUCCESS);
     default:
-        
+
         waitpid(-1, &status, WNOHANG);
         sleep(1);
     }
 }
 
-void stop_handler(int signum){
+void stop_handler(int signum)
+{
     printf("handler");
     sleeping_bois++;
     pause();
-} 
+}
 
+void recursive_piping(char ***programs, int pos, int in_fd)
+{
+    if (programs[pos + 1] == NULL) // ultimo command
+    {
+        redirect(in_fd, STDIN_FILENO);
+        execvp(programs[pos][0], programs[pos]);
+        perror("Error al ejecutar ultimo programa");
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        int fd[2];
+        if (pipe(fd) == -1)
+        {
+            perror("Error al crear pipe");
+            exit(EXIT_FAILURE);
+        }
+        switch (fork())
+        {
+        case -1:
+            perror("Error al hacer fork");
+            exit(EXIT_FAILURE);
+        case 0:
+            close(fd[0]);                   // cierro lectura
+            redirect(in_fd, STDIN_FILENO);  // reemplazo stdin por in_fd
+            redirect(fd[1], STDOUT_FILENO); // escribo a la entrada del pipe
+            execvp(programs[pos][0], programs[pos]);
+            char *msg = malloc(sizeof(char *) * 1024);
+            sprintf(msg, "Error al ejecutar programa %s en posicion %d", programs[pos][0], pos);
+            perror(msg);
+            exit(EXIT_FAILURE);
+        default:
+            close(fd[1]);
+            close(in_fd);
+            printf("en default, contador: %d\n", pos + 1);
+            recursive_piping(programs, pos + 1, fd[0]);
+        }
+    }
+}
+
+void redirect(int oldfd, int newfd)
+{
+    if (oldfd != newfd)
+    {
+        if (dup2(oldfd, newfd) != -1)
+            close(oldfd);
+        else
+        {
+            perror("Error al ejecutar dup2");
+            exit(EXIT_FAILURE);
+        }
+    }
+}
+
+void piping(char **commands)
+{
+    pipe_flag = 0;
+    // programs es un arreglo que contiene, en cada posición, los arrays con argumentos para cada pipe por separado.
+    char ***programs = (char ***)malloc(sizeof(char **) * tokens);
+    for (int i = 0; i < tokens; i++)
+    {
+        programs[i] = (char **)malloc(sizeof(char *) * tokens);
+        for (int j = 0; j < tokens; j++)
+        {
+            programs[i][j] = (char *)malloc(sizeof(char) * tokens);
+        }
+    }
+    int count_v[1024];
+    int count = 0;
+    int pipe_count = 0;
+    for (int i = 0; i < tokens; i++)
+    {
+        if (strcmp(commands[i], "|") == 0)
+        {
+            programs[pipe_count][count] = NULL;
+            pipe_count++;
+            count_v[pipe_count] = count;
+            count = 0;
+        }
+        else
+        {
+            printf("String: %s\n", commands[i]);
+            programs[pipe_count][count] = commands[i];
+            count++;
+        }
+    }/* 
+    programs[pipe_count][count] = NULL;
+    count_v[pipe_count] = count++; */
+
+    for (int i = 0; i < count; i++)
+    {
+        for (int k = 0; k <= count_v[i]; k++)
+        {
+            printf("Program %d: %s\n", i, programs[i][k]);
+        }
+    }
+    char* cmd1[] = { "ls" , NULL };
+    char* cmd2[] = { "grep", "u", NULL };
+    char* more[] = { "wc", "-l", NULL };
+    char** cmds[] = { cmd1, cmd2, more, NULL };
+
+    recursive_piping((char***)cmds, 0, STDIN_FILENO);
+    exit(EXIT_SUCCESS);
+}

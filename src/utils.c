@@ -3,7 +3,7 @@
 void init()
 {
     job_id = 0;
-    printf("\n*---------------------------------------- ✽ Sofia's Shell ✽ ----------------------------------------*\n");
+    printf("\n*---------------------------------------- ✽ \033[0;35mSofia's Shell\033[0m ✽ ----------------------------------------*\n");
     printf("                                             (づ｡◕‿‿◕｡)づ\n\n✽ Este trabajo se realizo dentro del contexto de la materia Sistemas Operativos 1\n✽ Si necesitás ayuda, escribí el comando help\n✽ Linux masterrace\n\n");
     return;
 }
@@ -26,18 +26,20 @@ void refresh_prompt()
 
     if (environment.cwd != NULL && environment.user != NULL && environment.hostname != NULL)
     {
-        strcpy(prompt, environment.user);
+        char user[100] = "\033[0;32m";
+        strcat(user, environment.user);
+        strcpy(prompt, user);
         // aloco más memoria para todo el string que se va a imprimir en pantalla
         aux = realloc(prompt, malloc_usable_size(prompt) + strlen(environment.hostname) + strlen(environment.cwd) + strlen("@") + strlen(":~$ ") + 1);
         if (aux != NULL)
         {
             prompt = aux;
             // concateno a user el @, el hostname, etc
-            strcat(prompt, "@");
+            strcat(prompt, ("@"));
             strcat(prompt, environment.hostname);
-            strcat(prompt, ":~");
+            strcat(prompt, "\033[0;35m:~");
             strcat(prompt, getenv("PWD"));
-            strcat(prompt, "$");
+            strcat(prompt, "\033[0m$");
             // printf("%s", prompt);
             //  workspace es una variable global
             workspace = prompt;

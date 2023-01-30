@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <sys/mman.h>
 
 #define CLR "\033[1;1H\033[2J"
 
@@ -21,7 +22,7 @@ typedef struct Env{
 env environment;
 char* workspace;
 
-int job_id;
+int *job_id;
 
 struct utsname uts;
 //el size_t y ssize_t no admiten valores negativos

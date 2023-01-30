@@ -310,20 +310,25 @@ void read_from_file(char *file_name){
 void background_exec(char** commands){
     pid_t pid;
     pid = fork();
-    job_id++;
+    
+    
+    job_id = (int*)mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    job_id[0] = 0;
+
     switch(pid){
     case -1:
         perror("Error al crear proceso");
         break;
     case 0:
-        printf("[%d] %d\n", job_id, getpid());
+        job_id[0]++;
+        printf("[%d] %d\n", job_id[0], getpid());
         interpreter(commands);
-        job_id--;
+        printf("[%d] + %d done\n", job_id[0], getpid());
+        job_id[0]--;
         exit(EXIT_SUCCESS);
     default:
         signal(SIGCHLD, sigHandler);
         sleep(1);
-        return;
     }
 }
 

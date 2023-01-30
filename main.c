@@ -22,8 +22,10 @@ int main(int argc, char *argv[])
 
         if(strcmp(tokens_buff[tokens-1],"&") == 0)
         {
+            tokens--;
             background_exec(tokens_buff);
         }else{
+            //printf("foreground\n");
             interpreter(tokens_buff);
 
             printf("\n");

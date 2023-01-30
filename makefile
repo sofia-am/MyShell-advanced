@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Werror -pedantic -g
+CFLAGS = -Wall -pedantic -g -Werror
 OBJS = bin
 SRC = src
 LIB = lib

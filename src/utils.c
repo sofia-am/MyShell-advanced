@@ -105,10 +105,10 @@ char **parser(char *stream)
         ptr = strtok(NULL, " \t\n");
         tokens++;
     }
-/*     for (int i = 0; i <= (tokens-1); i++)
+/*   for (int i = 0; i <= (tokens-1); i++)
     {
          printf("%s\n", buff[i]);
-    } */
+    }  */
     //free(stream); // con el batchfile se me explotaba??
     return buff; // devuelve un buffer de tamaño palabras + 1 -> porque almacena el NULL al final
 }
@@ -143,13 +143,17 @@ void launch_program(char **commands)
     // tiene que terminar con un NULL !!!!!!!!!!!!!!!!
 
     pid_t pid = fork();
-    int status;
-
+    int wstatus;
+ 
     switch (pid)
     {
     case -1:
         perror("Fallo al hacer fork");
     case 0:
+        signal(SIGINT, SIG_DFL);
+        signal(SIGQUIT, SIG_DFL);
+        signal(SIGTSTP, stop_handler); 
+
         if(commands[0][0] == '.'){
             // caso donde el programa se encuentra en el mismo directorio
             execv(commands[0], commands);
@@ -162,15 +166,21 @@ void launch_program(char **commands)
         break;
 
     default:
-        do{
-            waitpid(pid, &status, WUNTRACED);
-        }while(!WIFEXITED(status) && !WIFSIGNALED(status));
+        waitpid(-1, &wstatus, WUNTRACED);
+        if(WIFSTOPPED(wstatus)){
+            sleeping_bois++;
+            printf("[%d] + %d suspended", sleeping_bois, pid);
+        }else if(WIFCONTINUED(wstatus)){
+            sleeping_bois--;
+            printf("[%d] + %d continued", sleeping_bois, pid);
+        }
+        return;        
     }
 }
 
 void help_interp()
 {
-    printf("\n oh hiiii, bienvenido/a a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\nclr: limpia la pantalla\necho: imprime en pantalla el string ingresado\ncd: cambia el directorio actual\necho $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\nquit: cierra la shell\n");
+    printf("\n Bienvenido/a a mi shell!\nPara utilizarla, ingrese los comandos que desee, separados por espacios.\nLos comandos disponibles son:\n\033[0;35m✽\033[0m clr: limpia la pantalla\n\033[0;35m✽\033[0m echo: imprime en pantalla el string ingresado\n\033[0;35m✽\033[0m cd: cambia el directorio actual\n\033[0;35m✽\033[0m echo $VARIABLE: imprime en pantalla el valor de la variable de entorno ingresada\n\033[0;35m✽\033[0m quit: cierra la shell\n");
 }
 
 void echo_interp(char **commands)
@@ -311,8 +321,8 @@ void read_from_file(char *file_name){
 
 void background_exec(char** commands){
     pid_t pid;
+    int status;
     pid = fork();
-    
     
     job_id = (int*)mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
     job_id[0] = 0;
@@ -329,12 +339,15 @@ void background_exec(char** commands){
         job_id[0]--;
         exit(EXIT_SUCCESS);
     default:
-        signal(SIGCHLD, sigHandler);
+        
+        waitpid(-1, &status, WNOHANG);
         sleep(1);
     }
 }
 
-void sigHandler(){
-    int status;
-    waitpid(-1, &status, WNOHANG);
-}
+void stop_handler(int signum){
+    printf("handler");
+    sleeping_bois++;
+    pause();
+} 
+

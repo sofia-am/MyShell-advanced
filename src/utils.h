@@ -23,6 +23,7 @@ env environment;
 char* workspace;
 
 int *job_id;
+int sleeping_bois;
 
 struct utsname uts;
 //el size_t y ssize_t no admiten valores negativos
@@ -63,6 +64,6 @@ void set_env(void);
 void refresh_prompt(void);
 void read_from_file(char* file);
 void background_exec(char** commands);
-void sigHandler();
+void stop_handler(int signum);
 
 #endif

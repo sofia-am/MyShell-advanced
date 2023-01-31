@@ -43,10 +43,15 @@ int main(int argc, char *argv[])
                 {
                     pipe_flag = 1;
                 }
+                else if(strcmp(tokens_buff[i], "<") == 0 || strcmp(tokens_buff[i], ">") == 0){
+                    io_flag = 1;                    
+                }
             }
-            if (pipe_flag)
-            {
-                piping(tokens_buff);
+            if(pipe_flag) piping(tokens_buff);
+            if(io_flag){
+                printf("En io redirection\n");
+                io_redirection(tokens_buff);
+                break;
             }
             else
             {

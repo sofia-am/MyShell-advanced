@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 
 #define CLR "\033[1;1H\033[2J"
 #define READ_END 0  /* index pipe extremo escritura */
@@ -28,6 +29,7 @@ char *workspace;
 int *job_id;
 int sleeping_bois;
 int pipe_flag;
+int io_flag;
 
 struct utsname uts;
 // el size_t y ssize_t no admiten valores negativos
@@ -73,5 +75,6 @@ void stop_handler(int signum);
 void piping(char **commands);
 void redirect(int oldfd, int newfd);
 void recursive_piping(char ***programs, int pos, int in_fd);
-
+void io_redirection(char** commands);
+//ls -la < text1.txt 
 #endif

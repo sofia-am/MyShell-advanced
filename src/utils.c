@@ -368,17 +368,21 @@ void recursive_piping(char ***programs, int pos, int in_fd)
     if (programs[pos + 1] == NULL) // ultimo command
     {
         int pid = fork();
-        if (pid == -1) {
+        if (pid == -1)
+        {
             perror("Error al hacer fork");
             exit(EXIT_FAILURE);
         }
-        else if (pid == 0) {
+        // tuve que hacer otro fork aca porque sino con la ejecución de execvp moría el proceso padre, ya que era reemplazado por la imagen nueva
+        else if (pid == 0)
+        {
             redirect(in_fd, STDIN_FILENO);
             execvp(programs[pos][0], programs[pos]);
             perror("Error al ejecutar ultimo programa");
             exit(EXIT_FAILURE);
         }
-        else {
+        else
+        {
             int status;
             waitpid(pid, &status, 0);
             return;
@@ -387,6 +391,7 @@ void recursive_piping(char ***programs, int pos, int in_fd)
     else
     {
         int fd[2];
+        // creo el pipe
         if (pipe(fd) == -1)
         {
             perror("Error al crear pipe");
@@ -405,9 +410,10 @@ void recursive_piping(char ***programs, int pos, int in_fd)
             perror("Error al ejecutar programa");
             exit(EXIT_FAILURE);
         default:
-            close(fd[1]);
+            // if you don't close the original file descriptor after duplication, the parent process and the child process may both attempt to write to the same pipe or file, which can cause unexpected results.
             close(fd[1]);
             close(in_fd);
+            // el proceso padre se llama recursivamente con el file descriptor de escritura como el de entrada
             recursive_piping(programs, pos + 1, fd[0]);
             return;
         }
@@ -417,9 +423,10 @@ void recursive_piping(char ***programs, int pos, int in_fd)
 void redirect(int oldfd, int newfd)
 {
     if (oldfd != newfd)
-    {
+    { //  The dup and dup2 system calls are used to duplicate a file descriptor, creating a new file descriptor that refers to the same file.
         if (dup2(oldfd, newfd) != -1)
             close(oldfd);
+        // after redirecting the standard input or output to the appropriate file descriptor with dup2, the original file descriptor is closed to avoid such unintended sharing.
         else
         {
             perror("Error al ejecutar dup2");
@@ -441,7 +448,7 @@ void piping(char **commands)
             programs[i][j] = (char *)malloc(sizeof(char) * tokens);
         }
     }
-   // int count_v[1024];
+    // int count_v[1024];
     int count = 0;
     int pipe_count = 0;
     for (int i = 0; i < tokens; i++)
@@ -450,42 +457,111 @@ void piping(char **commands)
         {
             programs[pipe_count][count] = NULL;
             pipe_count++;
-      //      count_v[pipe_count] = count;
+            //      count_v[pipe_count] = count;
             count = 0;
         }
         else
         {
-            //printf("String: %s\n", commands[i]);
+            // printf("String: %s\n", commands[i]);
             programs[pipe_count][count] = commands[i];
             count++;
         }
     }
     programs[pipe_count][count] = NULL;
-    //count_v[pipe_count] = count++; 
-/* 
-    for (int i = 0; i < count; i++)
-    {
-        for (int k = 0; k <= count_v[i]; k++)
-        {
-            printf("Program %d: %s\n", i, programs[i][k]);
-        }
-    } */
-    
-    programs[pipe_count+1] = NULL;
+    programs[pipe_count + 1] = NULL;
     int pid = fork();
-    if (pid == -1) {
+    if (pid == -1)
+    {
         perror("Error al hacer fork");
         exit(EXIT_FAILURE);
     }
-    else if (pid == 0) {
+    else if (pid == 0)
+    {
+        // lo tiene que ejecutar otro proceso ya que sino el proceso padre no podía retomar la ejecución después de la llamada recursiva
         recursive_piping(programs, 0, STDIN_FILENO);
         exit(EXIT_SUCCESS);
     }
-    else {
+    else
+    {
         int status;
         waitpid(pid, &status, 0);
     }
     pipe_flag = 0;
     free(commands);
     return;
+}
+
+void io_redirection(char **commands)
+{
+    
+    int input_fd = 0;
+    int output_fd = 0;
+    char *input_file = malloc(sizeof(char) * tokens);
+    char *output_file = malloc(sizeof(char) * tokens);
+    char **program = malloc(tokens*sizeof(char*));
+
+    for (int i = 0; i < tokens; i++)
+    {
+        if (strcmp(commands[i], ">") == 0)
+        {
+            output_file = commands[i + 1];
+            output_fd = 1;
+            printf("output file %s\n", commands[i + 1]);
+            break;
+        }
+        else if (strcmp(commands[i], "<") == 0)
+        {
+            input_file = commands[i + 1];
+            input_fd = 1;
+            printf("input file %s\n", commands[i + 1]);
+            break;
+        }
+        printf("Command %s\n", commands[i]);
+        program[i] = commands[i];
+    }
+
+    if (input_fd != 0)
+    {
+        input_fd = open(input_file, O_RDONLY);
+        if (input_fd == -1)
+        {
+            perror("Error opening input file");
+            exit(1);
+        }
+        dup2(input_fd, STDIN_FILENO);
+        
+    }
+
+    if (output_fd != 0)
+    {
+        output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (output_fd == -1)
+        {
+            perror("Error opening output file");
+            exit(1);
+        }
+        dup2(output_fd, STDOUT_FILENO);        
+    }
+
+    int pid = fork();
+    if (pid == -1)
+    {
+        perror("Error forking process");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0)
+    {
+        execvp(program[0], program);
+        perror("Error executing program");
+        exit(1);
+    }
+    else
+    {
+        int status;
+        waitpid(pid, &status, 0);
+        if (output_fd != 0) close(output_fd);
+        else if(input_fd != 0) close(input_fd);
+        return;
+    }
 }

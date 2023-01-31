@@ -364,12 +364,25 @@ void stop_handler(int signum)
 
 void recursive_piping(char ***programs, int pos, int in_fd)
 {
+    pid_t pid;
     if (programs[pos + 1] == NULL) // ultimo command
     {
-        redirect(in_fd, STDIN_FILENO);
-        execvp(programs[pos][0], programs[pos]);
-        perror("Error al ejecutar ultimo programa");
-        exit(EXIT_FAILURE);
+        int pid = fork();
+        if (pid == -1) {
+            perror("Error al hacer fork");
+            exit(EXIT_FAILURE);
+        }
+        else if (pid == 0) {
+            redirect(in_fd, STDIN_FILENO);
+            execvp(programs[pos][0], programs[pos]);
+            perror("Error al ejecutar ultimo programa");
+            exit(EXIT_FAILURE);
+        }
+        else {
+            int status;
+            waitpid(pid, &status, 0);
+            return;
+        }
     }
     else
     {
@@ -379,7 +392,7 @@ void recursive_piping(char ***programs, int pos, int in_fd)
             perror("Error al crear pipe");
             exit(EXIT_FAILURE);
         }
-        switch (fork())
+        switch (pid = fork())
         {
         case -1:
             perror("Error al hacer fork");
@@ -389,15 +402,14 @@ void recursive_piping(char ***programs, int pos, int in_fd)
             redirect(in_fd, STDIN_FILENO);  // reemplazo stdin por in_fd
             redirect(fd[1], STDOUT_FILENO); // escribo a la entrada del pipe
             execvp(programs[pos][0], programs[pos]);
-            char *msg = malloc(sizeof(char *) * 1024);
-            sprintf(msg, "Error al ejecutar programa %s en posicion %d", programs[pos][0], pos);
-            perror(msg);
+            perror("Error al ejecutar programa");
             exit(EXIT_FAILURE);
         default:
             close(fd[1]);
+            close(fd[1]);
             close(in_fd);
-            printf("en default, contador: %d\n", pos + 1);
             recursive_piping(programs, pos + 1, fd[0]);
+            return;
         }
     }
 }
@@ -429,7 +441,7 @@ void piping(char **commands)
             programs[i][j] = (char *)malloc(sizeof(char) * tokens);
         }
     }
-    int count_v[1024];
+   // int count_v[1024];
     int count = 0;
     int pipe_count = 0;
     for (int i = 0; i < tokens; i++)
@@ -438,31 +450,42 @@ void piping(char **commands)
         {
             programs[pipe_count][count] = NULL;
             pipe_count++;
-            count_v[pipe_count] = count;
+      //      count_v[pipe_count] = count;
             count = 0;
         }
         else
         {
-            printf("String: %s\n", commands[i]);
+            //printf("String: %s\n", commands[i]);
             programs[pipe_count][count] = commands[i];
             count++;
         }
-    }/* 
+    }
     programs[pipe_count][count] = NULL;
-    count_v[pipe_count] = count++; */
-
+    //count_v[pipe_count] = count++; 
+/* 
     for (int i = 0; i < count; i++)
     {
         for (int k = 0; k <= count_v[i]; k++)
         {
             printf("Program %d: %s\n", i, programs[i][k]);
         }
+    } */
+    
+    programs[pipe_count+1] = NULL;
+    int pid = fork();
+    if (pid == -1) {
+        perror("Error al hacer fork");
+        exit(EXIT_FAILURE);
     }
-    char* cmd1[] = { "ls" , NULL };
-    char* cmd2[] = { "grep", "u", NULL };
-    char* more[] = { "wc", "-l", NULL };
-    char** cmds[] = { cmd1, cmd2, more, NULL };
-
-    recursive_piping((char***)cmds, 0, STDIN_FILENO);
-    exit(EXIT_SUCCESS);
+    else if (pid == 0) {
+        recursive_piping(programs, 0, STDIN_FILENO);
+        exit(EXIT_SUCCESS);
+    }
+    else {
+        int status;
+        waitpid(pid, &status, 0);
+    }
+    pipe_flag = 0;
+    free(commands);
+    return;
 }

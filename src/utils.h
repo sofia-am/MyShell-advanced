@@ -31,6 +31,8 @@ int sleeping_bois;
 int pipe_flag;
 int io_flag;
 
+int double_redir;
+
 struct utsname uts;
 // el size_t y ssize_t no admiten valores negativos
 ssize_t stream_size; // caracteres leidos
@@ -76,5 +78,8 @@ void piping(char **commands);
 void redirect(int oldfd, int newfd);
 void recursive_piping(char ***programs, int pos, int in_fd);
 void io_redirection(char** commands);
+void io_input_red(char **commands, int fd);
+void io_output_red(char **commands, int fd);
+void double_redirection(char **commands, int fd_in, int fd_out);
 //ls -la < text1.txt 
 #endif

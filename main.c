@@ -51,7 +51,6 @@ int main(int argc, char *argv[])
             if(io_flag){
                 printf("En io redirection\n");
                 io_redirection(tokens_buff);
-                break;
             }
             else
             {

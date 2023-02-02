@@ -487,18 +487,17 @@ void piping(char **commands)
         waitpid(pid, &status, 0);
     }
     pipe_flag = 0;
-    free(commands);
     return;
 }
 
 void io_redirection(char **commands)
 {
-    
     int input_fd = 0;
     int output_fd = 0;
+    double_redir = 0;
     char *input_file = malloc(sizeof(char) * tokens);
     char *output_file = malloc(sizeof(char) * tokens);
-    char **program = malloc(tokens*sizeof(char*));
+    char **program = malloc(tokens * sizeof(char *));
 
     for (int i = 0; i < tokens; i++)
     {
@@ -507,61 +506,147 @@ void io_redirection(char **commands)
             output_file = commands[i + 1];
             output_fd = 1;
             printf("output file %s\n", commands[i + 1]);
-            break;
         }
         else if (strcmp(commands[i], "<") == 0)
         {
             input_file = commands[i + 1];
             input_fd = 1;
             printf("input file %s\n", commands[i + 1]);
+        }
+    }
+
+    for (int i = 0; i < tokens; i++)
+    {
+        if (strcmp(commands[i], ">") == 0 || strcmp(commands[i], "<") == 0)
+        {
             break;
         }
         printf("Command %s\n", commands[i]);
         program[i] = commands[i];
     }
 
-    if (input_fd != 0)
-    {
+    if (input_fd != 0 && output_fd != 0){
+        printf("Entré a double_redir\n");
         input_fd = open(input_file, O_RDONLY);
         if (input_fd == -1)
         {
             perror("Error opening input file");
             exit(1);
         }
-        dup2(input_fd, STDIN_FILENO);
-        
-    }
-
-    if (output_fd != 0)
-    {
         output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (output_fd == -1)
         {
             perror("Error opening output file");
             exit(1);
         }
-        dup2(output_fd, STDOUT_FILENO);        
+        double_redirection(program, input_fd, output_fd);
+    }
+    else if (input_fd != 0)
+    {
+        printf("Entré a input_fd\n");
+        input_fd = open(input_file, O_RDONLY);
+        if (input_fd == -1)
+        {
+            perror("Error opening input file");
+            exit(1);
+        }
+        io_input_red(program, input_fd);
+    }
+    else if (output_fd != 0)
+    {
+        printf("Entré a output_fd\n");
+        output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (output_fd == -1)
+        {
+            perror("Error opening output file");
+            exit(1);
+        }
+        io_output_red(program, output_fd);
     }
 
-    int pid = fork();
-    if (pid == -1)
-    {
-        perror("Error forking process");
-        exit(EXIT_FAILURE);
-    }
+    io_flag = 0;
+    return;
+}
 
-    if (pid == 0)
+void io_output_red(char **commands, int fd)
+{
+    int status, d;
+
+    switch (fork())
     {
-        execvp(program[0], program);
-        perror("Error executing program");
+    case 0:                          /* child */
+        d = dup2(fd, STDOUT_FILENO); /* fd becomes the standard output */
+        if (d == -1)
+            perror("dup2 output\n");
+        execvp(commands[0], commands);
+        perror(commands[0]); /* execvp failed */
         exit(1);
+
+    default: /* parent */
+        while (wait(&status) != -1)
+            ;
+        close(fd);
+        break;
+
+    case -1: /* error */
+        perror("fork");
     }
-    else
+    return;
+}
+
+void io_input_red(char **commands, int fd)
+{
+    int status, d;
+
+    switch (fork())
     {
-        int status;
-        waitpid(pid, &status, 0);
-        if (output_fd != 0) close(output_fd);
-        else if(input_fd != 0) close(input_fd);
-        return;
+    case 0:                         /* child */
+        d = dup2(fd, STDIN_FILENO); /* fd becomes the standard input */
+        if (d == -1)
+            perror("dup2 input\n");
+        execvp(commands[0], commands);
+        perror(commands[0]); /* execvp failed */
+        exit(1);
+
+    default: /* parent */
+        while (wait(&status) != -1)
+            ; /* pick up dead children */
+        close(fd);
+        break;
+
+    case -1: /* error */
+        perror("fork");
     }
+    return;
+}
+
+void double_redirection(char **commands, int fd_in, int fd_out)
+{
+    int status, d;
+
+    switch (fork())
+    {
+    case 0:
+        d = dup2(fd_in, STDIN_FILENO); /* fd becomes the standard input */
+        if (d == -1)
+            perror("dup2 input\n");
+        d = dup2(fd_out, STDOUT_FILENO); /* fd becomes the standard input */
+        if (d == -1)
+            perror("dup2 input\n");
+
+        execvp(commands[0], commands);
+        perror(commands[0]); /* execvp failed */
+        exit(1);
+
+    default: /* parent */
+        while (wait(&status) != -1)
+            ; /* pick up dead children */
+        close(fd_in);
+        close(fd_out);
+        break;
+
+    case -1: /* error */
+        perror("fork");
+    }
+    return;
 }

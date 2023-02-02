@@ -48,10 +48,7 @@ int main(int argc, char *argv[])
                 }
             }
             if(pipe_flag) piping(tokens_buff);
-            if(io_flag){
-                printf("En io redirection\n");
-                io_redirection(tokens_buff);
-            }
+            if(io_flag) io_redirection(tokens_buff);
             else
             {
                 interpreter(tokens_buff);

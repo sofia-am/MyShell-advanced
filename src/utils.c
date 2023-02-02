@@ -505,13 +505,11 @@ void io_redirection(char **commands)
         {
             output_file = commands[i + 1];
             output_fd = 1;
-            printf("output file %s\n", commands[i + 1]);
         }
         else if (strcmp(commands[i], "<") == 0)
         {
             input_file = commands[i + 1];
             input_fd = 1;
-            printf("input file %s\n", commands[i + 1]);
         }
     }
 
@@ -521,12 +519,11 @@ void io_redirection(char **commands)
         {
             break;
         }
-        printf("Command %s\n", commands[i]);
+        //printf("Command %s\n", commands[i]);
         program[i] = commands[i];
     }
 
     if (input_fd != 0 && output_fd != 0){
-        printf("Entré a double_redir\n");
         input_fd = open(input_file, O_RDONLY);
         if (input_fd == -1)
         {
@@ -543,7 +540,6 @@ void io_redirection(char **commands)
     }
     else if (input_fd != 0)
     {
-        printf("Entré a input_fd\n");
         input_fd = open(input_file, O_RDONLY);
         if (input_fd == -1)
         {
@@ -554,7 +550,6 @@ void io_redirection(char **commands)
     }
     else if (output_fd != 0)
     {
-        printf("Entré a output_fd\n");
         output_fd = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (output_fd == -1)
         {
@@ -578,7 +573,8 @@ void io_output_red(char **commands, int fd)
         d = dup2(fd, STDOUT_FILENO); /* fd becomes the standard output */
         if (d == -1)
             perror("dup2 output\n");
-        execvp(commands[0], commands);
+        if(strcmp(commands[0], "echo") == 0) echo_interp(commands);
+        else execvp(commands[0], commands);
         perror(commands[0]); /* execvp failed */
         exit(1);
 

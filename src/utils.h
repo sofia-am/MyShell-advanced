@@ -26,7 +26,7 @@ typedef struct Env
 env environment;
 char *workspace;
 
-int *job_id;
+int job_id;
 int sleeping_bois;
 int pipe_flag;
 int io_flag;

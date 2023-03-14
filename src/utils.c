@@ -3,7 +3,7 @@
 void init()
 {
     job_id = 0;
-    printf("\n*---------------------------------------- ✽ \033[0;35mSofia's Shell\033[0m ✽ ----------------------------------------*\n");
+    printf("\n*---------------------------------------- ✽ \033[33;1mSofia's Shell\033[0m ✽ ----------------------------------------*\n");
     printf("                                             (づ｡◕‿‿◕｡)づ\n\n✽ Este trabajo se realizo dentro del contexto de la materia Sistemas Operativos 1\n✽ Si necesitás ayuda, escribí el comando help\n✽ Linux masterrace\n\n");
     return;
 }
@@ -37,7 +37,7 @@ void refresh_prompt()
             // concateno a user el @, el hostname, etc
             strcat(prompt, ("@"));
             strcat(prompt, environment.hostname);
-            strcat(prompt, "\033[0;35m:~");
+            strcat(prompt, "\033[33;1m:~");
             strcat(prompt, getenv("PWD"));
             strcat(prompt, "\033[0m$");
             // printf("%s", prompt);
@@ -331,10 +331,18 @@ void background_exec(char **commands)
 {
     pid_t pid;
     int status;
-    pid = fork();
+    int null_fd = open("/dev/null", O_WRONLY);
 
-    job_id = (int *)mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    int *job_id = mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+
+    if (job_id == MAP_FAILED) {
+        perror("Error al crear espacio de memoria compartida");
+        exit(EXIT_FAILURE);
+    }
+
     job_id[0] = 0;
+
+    pid = fork();
 
     switch (pid)
     {
@@ -342,16 +350,19 @@ void background_exec(char **commands)
         perror("Error al crear proceso");
         break;
     case 0:
-        job_id[0]++;
+        (job_id[0])++; 
         printf("[%d] %d\n", job_id[0], getpid());
-        interpreter(commands);
-        printf("[%d] + %d done\n", job_id[0], getpid());
-        job_id[0]--;
+        dup2(null_fd, STDOUT_FILENO);
+        dup2(null_fd, STDERR_FILENO);
+        close(null_fd);               
+        interpreter(commands);        
         exit(EXIT_SUCCESS);
     default:
-
         waitpid(-1, &status, WNOHANG);
         sleep(1);
+        printf("[%d] + %d done\n", job_id[0], pid);
+        (job_id[0])--;
+        munmap(job_id, sizeof(int));
     }
 }
 
